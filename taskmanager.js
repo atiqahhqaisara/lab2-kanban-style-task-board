@@ -12,28 +12,32 @@ function createTaskCard(task) {
   li.setAttribute('data-priority', task.priority);
   li.setAttribute('draggable', 'true');
 
-	li.addEventListener('dragstart', function (e) {
-  		e.dataTransfer.setData('text/plain', task.id);
-	});
+  // drag start
+  li.addEventListener('dragstart', function (e) {
+    e.dataTransfer.setData('text/plain', task.id);
+  });
 
   const title = document.createElement('span');
   title.textContent = task.title;
   title.classList.add('task-title');
 
-  // INLINE EDIT
+  /* INLINE EDIT */
   title.addEventListener('dblclick', function () {
     const input = document.createElement('input');
     input.value = title.textContent;
+
+    function save() {
+      title.textContent = input.value;
+      li.replaceChild(title, input);
+
+      const t = tasks.find(t => t.id === task.id);
+      if (t) t.title = input.value;
+    }
 
     input.addEventListener('blur', save);
     input.addEventListener('keypress', e => {
       if (e.key === 'Enter') save();
     });
-
-    function save() {
-      title.textContent = input.value;
-      li.replaceChild(title, input);
-    }
 
     li.replaceChild(input, title);
   });
@@ -41,11 +45,16 @@ function createTaskCard(task) {
   const desc = document.createElement('p');
   desc.textContent = task.description;
 
-  const priority = document.createElement('span');
-  priority.textContent = "Priority: " + task.priority;
+  const meta = document.createElement('div');
+  meta.classList.add('task-meta');
 
-  const date = document.createElement('small');
-  date.textContent = "Due: " + task.dueDate;
+  const priority = document.createElement('div');
+  priority.textContent = "📌 Priority: " + task.priority;
+
+  const date = document.createElement('div');
+  date.textContent = "📅 Due: " + task.dueDate;
+
+  meta.append(priority, date);
 
   const editBtn = document.createElement('button');
   editBtn.textContent = "Edit";
@@ -57,13 +66,19 @@ function createTaskCard(task) {
   deleteBtn.setAttribute('data-action', 'delete');
   deleteBtn.setAttribute('data-id', task.id);
 
-  li.append(title, desc, priority, date, editBtn, deleteBtn);
+  const actions = document.createElement('div');
+  actions.classList.add('task-actions');
+  actions.append(editBtn, deleteBtn);
+
+  li.append(title, desc, meta, actions);
 
   return li;
 }
 
 /* ADD TASK */
 function addTask(columnId, task) {
+  task.column = columnId; // ✅ IMPORTANT FIX
+
   const list = document.querySelector(`#${columnId} .task-list`);
   const card = createTaskCard(task);
 
@@ -76,6 +91,7 @@ function addTask(columnId, task) {
 /* DELETE TASK */
 function deleteTask(id) {
   const card = document.querySelector(`[data-id="${id}"]`);
+  if (!card) return;
 
   card.classList.add('fade-out');
 
@@ -89,6 +105,7 @@ function deleteTask(id) {
 /* EDIT TASK */
 function editTask(id) {
   const task = tasks.find(t => t.id === id);
+  if (!task) return;
 
   titleInput.value = task.title;
   descInput.value = task.description;
@@ -102,10 +119,23 @@ function editTask(id) {
 /* UPDATE TASK */
 function updateTask(id, data) {
   const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
   Object.assign(task, data);
 
   const card = document.querySelector(`[data-id="${id}"]`);
+  if (!card) return;
+
   card.querySelector('.task-title').textContent = data.title;
+  card.querySelector('p').textContent = data.description;
+
+  card.querySelector('.task-meta').children[0].textContent =
+    "📌 Priority: " + data.priority;
+
+  card.querySelector('.task-meta').children[1].textContent =
+    "📅 Due: " + data.dueDate;
+
+  card.setAttribute('data-priority', data.priority);
 }
 
 /* COUNTER */
@@ -113,7 +143,7 @@ function updateCounter() {
   taskCount.textContent = tasks.length;
 }
 
-/* MODAL CONTROL */
+/* MODAL */
 const modal = document.getElementById('modal');
 const titleInput = document.getElementById('titleInput');
 const descInput = document.getElementById('descInput');
@@ -145,7 +175,6 @@ document.querySelectorAll('.add-btn').forEach(btn => {
 
 /* SAVE */
 document.getElementById('saveBtn').addEventListener('click', () => {
-
   const data = {
     title: titleInput.value,
     description: descInput.value,
@@ -174,7 +203,11 @@ document.getElementById('cancelBtn').addEventListener('click', closeModal);
 document.querySelectorAll('.task-list').forEach(list => {
   list.addEventListener('click', e => {
     const action = e.target.getAttribute('data-action');
-    const id = parseInt(e.target.getAttribute('data-id'));
+    const idAttr = e.target.getAttribute('data-id');
+
+    if (!idAttr) return;
+
+    const id = parseInt(idAttr);
 
     if (action === 'delete') deleteTask(id);
     if (action === 'edit') editTask(id);
@@ -199,25 +232,36 @@ document.getElementById('clearDone').addEventListener('click', () => {
   cards.forEach((card, i) => {
     setTimeout(() => {
       card.classList.add('fade-out');
-      card.addEventListener('transitionend', () => card.remove());
+      card.addEventListener('transitionend', () => {
+        const id = parseInt(card.getAttribute('data-id'));
+        tasks = tasks.filter(t => t.id !== id);
+        card.remove();
+        updateCounter();
+      });
     }, i * 100);
   });
 });
 
-document.querySelectorAll('section').forEach(section => {
+/* DRAG & DROP */
+document.querySelectorAll('.task-list').forEach(list => {
 
-  section.addEventListener('dragover', function (e) {
-    e.preventDefault(); // allow drop
+  list.addEventListener('dragover', function (e) {
+    e.preventDefault();
   });
 
-  section.addEventListener('drop', function (e) {
+  list.addEventListener('drop', function (e) {
     e.preventDefault();
 
-    const taskId = e.dataTransfer.getData('text/plain');
+    const taskId = parseInt(e.dataTransfer.getData('text/plain'));
     const card = document.querySelector(`[data-id="${taskId}"]`);
 
-    const list = this.querySelector('.task-list'); // get UL inside section
-    list.appendChild(card);
+    this.appendChild(card);
+
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      const newColumn = this.closest('.column').id;
+      task.column = newColumn;
+    }
   });
 
 });
