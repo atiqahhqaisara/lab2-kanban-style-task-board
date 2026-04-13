@@ -1,57 +1,61 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', sans-serif;
   margin: 0;
   padding: 20px;
-  background: #f0f2f5;
+  background: linear-gradient(to right, #74ebd5, #4facfe);
 }
 
+/* HEADER */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: white;
   margin-bottom: 20px;
 }
 
+/* BOARD */
 .board {
   display: flex;
-  gap: 15px;
+  gap: 20px;
 }
 
+/* COLUMN */
 section {
   flex: 1;
-  background: #e4e6eb;
-  padding: 10px;
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 15px;
+  border-radius: 15px;
+  color: #03396c;
 }
 
 h2 {
   text-align: center;
 }
 
+/* TASK CARD */
 .task-card {
   background: white;
-  padding: 10px;
+  padding: 12px;
   margin: 10px 0;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  cursor: grab;
 }
 
+/* BUTTON */
 button {
-  margin-top: 5px;
-  margin-right: 5px;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #4facfe;
+  color: white;
   cursor: pointer;
 }
 
-.hidden {
-  display: none;
-}
-
-.is-hidden {
-  display: none;
-}
-
-.fade-out {
-  opacity: 0;
-  transition: opacity 0.3s ease;
+button:hover {
+  background: #0077b6;
 }
 
 /* MODAL */
@@ -69,9 +73,19 @@ button {
   padding: 20px;
   width: 300px;
   margin: 100px auto;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
-.modal-actions {
-  margin-top: 10px;
+/* ANIMATION */
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hidden {
+  display: none;
+}
+
+.is-hidden {
+  display: none;
 }
