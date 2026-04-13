@@ -158,3 +158,48 @@ document.getElementById('saveBtn').addEventListener('click', function () {
 
   closeModal();
 });
+
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+
+document.querySelectorAll('.task-list').forEach(list => {
+
+  list.addEventListener('click', function (e) {
+
+    const action = e.target.getAttribute('data-action');
+    const id = parseInt(e.target.getAttribute('data-id'));
+
+    if (action === 'delete') deleteTask(id);
+    if (action === 'edit') editTask(id);
+  });
+});
+
+document.getElementById('priorityFilter')
+.addEventListener('change', function () {
+
+  document.querySelectorAll('.task-card').forEach(card => {
+
+    const match =
+      this.value === 'all' ||
+      card.getAttribute('data-priority') === this.value;
+
+    card.classList.toggle('is-hidden', !match);
+  });
+});
+
+document.getElementById('clearDone').addEventListener('click', function () {
+
+  const cards = document.querySelectorAll('#done .task-card');
+
+  cards.forEach((card, i) => {
+
+    setTimeout(() => {
+      card.classList.add('fade-out');
+      card.addEventListener('transitionend', () => card.remove());
+    }, i * 100);
+
+  });
+});
