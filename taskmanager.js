@@ -67,6 +67,7 @@ function createTaskCard(task) {
   return li;
 }
 
+//addTask
 function addTask(columnId, task) {
   const column = document.querySelector(`#${columnId} .task-list`);
   const card = createTaskCard(task);
@@ -75,4 +76,18 @@ function addTask(columnId, task) {
   tasks.push(task);
 
   updateCounter();
+}
+
+//delTask
+function deleteTask(taskId) {
+
+  const card = document.querySelector(`[data-id="${taskId}"]`);
+
+  card.classList.add('fade-out');
+
+  card.addEventListener('transitionend', () => {
+    card.remove();
+    tasks = tasks.filter(t => t.id !== taskId);
+    updateCounter();
+  });
 }
