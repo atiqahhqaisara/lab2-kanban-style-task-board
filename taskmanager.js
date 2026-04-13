@@ -10,6 +10,11 @@ function createTaskCard(task) {
   li.classList.add('task-card');
   li.setAttribute('data-id', task.id);
   li.setAttribute('data-priority', task.priority);
+  li.setAttribute('draggable', 'true');
+
+	li.addEventListener('dragstart', function (e) {
+  		e.dataTransfer.setData('text/plain', task.id);
+	});
 
   const title = document.createElement('span');
   title.textContent = task.title;
@@ -197,4 +202,22 @@ document.getElementById('clearDone').addEventListener('click', () => {
       card.addEventListener('transitionend', () => card.remove());
     }, i * 100);
   });
+});
+
+document.querySelectorAll('section').forEach(section => {
+
+  section.addEventListener('dragover', function (e) {
+    e.preventDefault(); // allow drop
+  });
+
+  section.addEventListener('drop', function (e) {
+    e.preventDefault();
+
+    const taskId = e.dataTransfer.getData('text/plain');
+    const card = document.querySelector(`[data-id="${taskId}"]`);
+
+    const list = this.querySelector('.task-list'); // get UL inside section
+    list.appendChild(card);
+  });
+
 });
