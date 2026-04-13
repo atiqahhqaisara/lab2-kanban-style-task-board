@@ -121,3 +121,40 @@ function updateTask(taskId, data) {
 function updateCounter() {
   taskCount.textContent = tasks.length;
 }
+
+function openModal(columnId) {
+  document.getElementById('modal').classList.remove('hidden');
+
+  document.getElementById('modal').setAttribute('data-column', columnId);
+
+  editingId = null;
+}
+
+document.querySelectorAll('.add-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    openModal(this.parentElement.id);
+  });
+});
+
+document.getElementById('saveBtn').addEventListener('click', function () {
+
+  const data = {
+    title: titleInput.value,
+    description: descInput.value,
+    priority: priorityInput.value,
+    dueDate: dateInput.value
+  };
+
+  if (editingId !== null) {
+    updateTask(editingId, data);
+  } else {
+    const column = document.getElementById('modal').getAttribute('data-column');
+
+    addTask(column, {
+      id: currentId++,
+      ...data
+    });
+  }
+
+  closeModal();
+});
