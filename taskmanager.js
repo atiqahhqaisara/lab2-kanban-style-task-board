@@ -1,31 +1,31 @@
 let tasks = [];
-let currentId = 0;
+let currentId = 1;
 let editingId = null;
 
 const taskCount = document.getElementById('task-count');
 
+/* CREATE TASK CARD */
 function createTaskCard(task) {
   const li = document.createElement('li');
   li.classList.add('task-card');
   li.setAttribute('data-id', task.id);
   li.setAttribute('data-priority', task.priority);
 
-  // TITLE
   const title = document.createElement('span');
   title.textContent = task.title;
   title.classList.add('task-title');
 
-  // DOUBLE CLICK EDIT
+  // INLINE EDIT
   title.addEventListener('dblclick', function () {
     const input = document.createElement('input');
     input.value = title.textContent;
 
-    input.addEventListener('blur', saveEdit);
-    input.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') saveEdit();
+    input.addEventListener('blur', save);
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') save();
     });
 
-    function saveEdit() {
+    function save() {
       title.textContent = input.value;
       li.replaceChild(title, input);
     }
@@ -33,110 +33,113 @@ function createTaskCard(task) {
     li.replaceChild(input, title);
   });
 
-  // DESCRIPTION
   const desc = document.createElement('p');
   desc.textContent = task.description;
 
-  // PRIORITY
   const priority = document.createElement('span');
-  priority.textContent = task.priority;
+  priority.textContent = "Priority: " + task.priority;
 
-  // DATE
   const date = document.createElement('small');
-  date.textContent = task.dueDate;
+  date.textContent = "Due: " + task.dueDate;
 
-  // EDIT BUTTON
   const editBtn = document.createElement('button');
-  editBtn.textContent = 'Edit';
+  editBtn.textContent = "Edit";
   editBtn.setAttribute('data-action', 'edit');
   editBtn.setAttribute('data-id', task.id);
 
-  // DELETE BUTTON
-  const delBtn = document.createElement('button');
-  delBtn.textContent = 'Delete';
-  delBtn.setAttribute('data-action', 'delete');
-  delBtn.setAttribute('data-id', task.id);
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = "Delete";
+  deleteBtn.setAttribute('data-action', 'delete');
+  deleteBtn.setAttribute('data-id', task.id);
 
-  li.appendChild(title);
-  li.appendChild(desc);
-  li.appendChild(priority);
-  li.appendChild(date);
-  li.appendChild(editBtn);
-  li.appendChild(delBtn);
+  li.append(title, desc, priority, date, editBtn, deleteBtn);
 
   return li;
 }
 
-//addTask
+/* ADD TASK */
 function addTask(columnId, task) {
-  const column = document.querySelector(`#${columnId} .task-list`);
+  const list = document.querySelector(`#${columnId} .task-list`);
   const card = createTaskCard(task);
 
-  column.appendChild(card);
+  list.appendChild(card);
   tasks.push(task);
 
   updateCounter();
 }
 
-//delTask
-function deleteTask(taskId) {
-
-  const card = document.querySelector(`[data-id="${taskId}"]`);
+/* DELETE TASK */
+function deleteTask(id) {
+  const card = document.querySelector(`[data-id="${id}"]`);
 
   card.classList.add('fade-out');
 
   card.addEventListener('transitionend', () => {
     card.remove();
-    tasks = tasks.filter(t => t.id !== taskId);
+    tasks = tasks.filter(t => t.id !== id);
     updateCounter();
   });
 }
 
-//edit Task
-function editTask(taskId) {
+/* EDIT TASK */
+function editTask(id) {
+  const task = tasks.find(t => t.id === id);
 
-  const task = tasks.find(t => t.id === taskId);
+  titleInput.value = task.title;
+  descInput.value = task.description;
+  priorityInput.value = task.priority;
+  dateInput.value = task.dueDate;
 
-  document.getElementById('titleInput').value = task.title;
-  document.getElementById('descInput').value = task.description;
-  document.getElementById('priorityInput').value = task.priority;
-  document.getElementById('dateInput').value = task.dueDate;
-
-  editingId = taskId;
-
-  document.getElementById('modal').classList.remove('hidden');
+  editingId = id;
+  modal.classList.remove('hidden');
 }
 
-//update Task
-function updateTask(taskId, data) {
-
-  const task = tasks.find(t => t.id === taskId);
-
+/* UPDATE TASK */
+function updateTask(id, data) {
+  const task = tasks.find(t => t.id === id);
   Object.assign(task, data);
 
-  const card = document.querySelector(`[data-id="${taskId}"]`);
-  card.querySelector('span').textContent = data.title;
+  const card = document.querySelector(`[data-id="${id}"]`);
+  card.querySelector('.task-title').textContent = data.title;
 }
 
+/* COUNTER */
 function updateCounter() {
   taskCount.textContent = tasks.length;
 }
 
-function openModal(columnId) {
-  document.getElementById('modal').classList.remove('hidden');
+/* MODAL CONTROL */
+const modal = document.getElementById('modal');
+const titleInput = document.getElementById('titleInput');
+const descInput = document.getElementById('descInput');
+const priorityInput = document.getElementById('priorityInput');
+const dateInput = document.getElementById('dateInput');
 
-  document.getElementById('modal').setAttribute('data-column', columnId);
+function openModal(columnId) {
+  modal.classList.remove('hidden');
+  modal.setAttribute('data-column', columnId);
+
+  titleInput.value = "";
+  descInput.value = "";
+  priorityInput.value = "medium";
+  dateInput.value = "";
 
   editingId = null;
 }
 
+function closeModal() {
+  modal.classList.add('hidden');
+}
+
+/* ADD BUTTONS */
 document.querySelectorAll('.add-btn').forEach(btn => {
   btn.addEventListener('click', function () {
     openModal(this.parentElement.id);
   });
 });
 
-document.getElementById('saveBtn').addEventListener('click', function () {
+/* SAVE */
+document.getElementById('saveBtn').addEventListener('click', () => {
 
   const data = {
     title: titleInput.value,
@@ -148,7 +151,7 @@ document.getElementById('saveBtn').addEventListener('click', function () {
   if (editingId !== null) {
     updateTask(editingId, data);
   } else {
-    const column = document.getElementById('modal').getAttribute('data-column');
+    const column = modal.getAttribute('data-column');
 
     addTask(column, {
       id: currentId++,
@@ -159,16 +162,12 @@ document.getElementById('saveBtn').addEventListener('click', function () {
   closeModal();
 });
 
+/* CANCEL */
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 
-function closeModal() {
-  document.getElementById('modal').classList.add('hidden');
-}
-
+/* EVENT DELEGATION */
 document.querySelectorAll('.task-list').forEach(list => {
-
-  list.addEventListener('click', function (e) {
-
+  list.addEventListener('click', e => {
     const action = e.target.getAttribute('data-action');
     const id = parseInt(e.target.getAttribute('data-id'));
 
@@ -177,11 +176,9 @@ document.querySelectorAll('.task-list').forEach(list => {
   });
 });
 
-document.getElementById('priorityFilter')
-.addEventListener('change', function () {
-
+/* FILTER */
+document.getElementById('priorityFilter').addEventListener('change', function () {
   document.querySelectorAll('.task-card').forEach(card => {
-
     const match =
       this.value === 'all' ||
       card.getAttribute('data-priority') === this.value;
@@ -190,16 +187,14 @@ document.getElementById('priorityFilter')
   });
 });
 
-document.getElementById('clearDone').addEventListener('click', function () {
-
+/* CLEAR DONE */
+document.getElementById('clearDone').addEventListener('click', () => {
   const cards = document.querySelectorAll('#done .task-card');
 
   cards.forEach((card, i) => {
-
     setTimeout(() => {
       card.classList.add('fade-out');
       card.addEventListener('transitionend', () => card.remove());
     }, i * 100);
-
   });
 });

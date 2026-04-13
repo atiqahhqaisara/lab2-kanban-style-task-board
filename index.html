@@ -19,6 +19,8 @@
 </header>
 
 <!-- COLUMNS -->
+<div class="board">
+
 <section id="todo">
   <h2>To Do</h2>
   <ul class="task-list"></ul>
@@ -37,11 +39,14 @@
   <button class="add-btn">Add Task</button>
   <button id="clearDone">Clear All</button>
 </section>
+</div>
 
 <!-- MODAL -->
-<div id="modal" class="hidden">
-  <input id="titleInput" placeholder="Title">
-  <textarea id="descInput"></textarea>
+<div id="modal" class="modal hidden">
+	<div class="modal-content">
+		<h3>Task</h3>
+  		<input id="titleInput" placeholder="Title">
+  		<textarea id="descInput" placeholder="Description"></textarea>
 
   <select id="priorityInput">
     <option value="high">High</option>
@@ -50,9 +55,11 @@
   </select>
 
   <input type="date" id="dateInput">
-
+<div class="modal-actions">
   <button id="saveBtn">Save</button>
   <button id="cancelBtn">Cancel</button>
+</div>
+</div>
 </div>
 
 <script src="taskmanager.js"></script>
