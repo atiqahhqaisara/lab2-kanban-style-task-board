@@ -91,3 +91,33 @@ function deleteTask(taskId) {
     updateCounter();
   });
 }
+
+//edit Task
+function editTask(taskId) {
+
+  const task = tasks.find(t => t.id === taskId);
+
+  document.getElementById('titleInput').value = task.title;
+  document.getElementById('descInput').value = task.description;
+  document.getElementById('priorityInput').value = task.priority;
+  document.getElementById('dateInput').value = task.dueDate;
+
+  editingId = taskId;
+
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+//update Task
+function updateTask(taskId, data) {
+
+  const task = tasks.find(t => t.id === taskId);
+
+  Object.assign(task, data);
+
+  const card = document.querySelector(`[data-id="${taskId}"]`);
+  card.querySelector('span').textContent = data.title;
+}
+
+function updateCounter() {
+  taskCount.textContent = tasks.length;
+}
