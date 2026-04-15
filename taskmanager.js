@@ -247,21 +247,30 @@ document.querySelectorAll('.task-list').forEach(list => {
 
   list.addEventListener('dragover', function (e) {
     e.preventDefault();
+    this.classList.add('drag-over'); // visual feedback
+  });
+
+  list.addEventListener('dragleave', function () {
+    this.classList.remove('drag-over'); // remove highlight when leaving
   });
 
   list.addEventListener('drop', function (e) {
     e.preventDefault();
+    this.classList.remove('drag-over'); // clean up highlight
 
     const taskId = parseInt(e.dataTransfer.getData('text/plain'));
     const card = document.querySelector(`[data-id="${taskId}"]`);
 
-    this.appendChild(card);
+    if (card) { // guard in case card isn't found
+      this.appendChild(card);
 
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-      const newColumn = this.closest('.column').id;
-      task.column = newColumn;
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        const newColumn = this.closest('.column').id;
+        task.column = newColumn;
+      }
     }
   });
 
 });
+
